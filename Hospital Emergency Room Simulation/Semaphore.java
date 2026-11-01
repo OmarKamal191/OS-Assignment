@@ -36,7 +36,7 @@ public class Semaphore{
         while (wakeups == 0) {
             long remaining = deadline - System.currentTimeMillis();
             if (remaining <= 0) {
-                value++;            
+                permits++;            
                 return false;       
             }
             try {
