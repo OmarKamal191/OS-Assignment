@@ -16,8 +16,8 @@ public class WaitingRoom {
 
     public void addPatient(Patient patient) {
         if (!empty.tryAcquire(0)) {
-            System.out.println("The waiting room is full.");
-            System.out.println("P" + patient.getId() + " is waiting outside for an available seat.");
+            System.out.println("The waiting room is full.\n"
+                    + "P" + patient.getId() + " is waiting outside for an available seat.");
             empty.acquire();   
         }
 

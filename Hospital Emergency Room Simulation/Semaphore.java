@@ -14,7 +14,11 @@ public class Semaphore{
             do {
                 try {
                     wait();
-                } catch (InterruptedException e) { }
+                } catch (InterruptedException e) {
+                    permits++;
+                    Thread.currentThread().interrupt();
+                    return;
+                }
             } while (wakeups == 0);
             wakeups--;
         }
@@ -22,29 +26,33 @@ public class Semaphore{
     public synchronized void release(){
         permits++;
         if(permits<=0){
-        wakeups++;    
+        wakeups++;
         notify();
         }
     }
     public synchronized boolean tryAcquire(long timeoutMillis) {
         permits--;
         if (permits >= 0) {
-            return true;   
-        }        
- 
+            return true;
+        }
+
         long deadline = System.currentTimeMillis() + timeoutMillis;
         while (wakeups == 0) {
             long remaining = deadline - System.currentTimeMillis();
             if (remaining <= 0) {
-                permits++;            
-                return false;       
+                permits++;
+                return false;
             }
             try {
                 wait(remaining);
-            } catch (InterruptedException e) { }
+            } catch (InterruptedException e) {
+                permits++;
+                Thread.currentThread().interrupt();
+                return false;
+            }
         }
         wakeups--;
         return true;
-        
+
     }
 }

@@ -29,17 +29,15 @@ public class Doctor implements Runnable {
                 return;
             }
 
-            System.out.println("Doctor " + id + " is assigned to P" + patient.getId() + ".");
+            System.out.println("\nDoctor " + id + " is assigned to P" + patient.getId() + ".");
             System.out.println("Doctor " + id + " is trying to acquire a treatment room.");
             boolean acquired = treatmentRooms.tryAcquire(ROOM_TIMEOUT_MS);
 
             if (!acquired) {
-                System.out.println("Doctor " + id + " could not acquire a treatment room.");
-                System.out.println("Doctor " + id + " is sending P" + patient.getId()
-                        + " back to the waiting room.");
+                System.out.println("Doctor " + id + " could not acquire a treatment room.\n"
+                        + "Doctor " + id + " is sending P" + patient.getId() + " back to the waiting room.");
 
-                Thread t = new Thread(() -> waitingRoom.addPatient(patient));
-                t.start();
+                waitingRoom.addPatient(patient);
 
                 System.out.println("Doctor " + id + " is now available.");
                 continue;
@@ -47,23 +45,17 @@ public class Doctor implements Runnable {
 
             System.out.println("Doctor " + id + " acquired a treatment room.");
             System.out.println("Doctor " + id + " begins treating P" + patient.getId() + ".");
-
             try {
-                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 3001));
+                Thread.sleep(ThreadLocalRandom.current().nextInt(2000, 5001));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-
             System.out.println("Doctor " + id + " finished treating P" + patient.getId() + ".");
             treatmentRooms.release();
             System.out.println("Doctor " + id + " released the treatment room.");
-
             System.out.println("Doctor " + id + " is now available.");
             System.out.println("P" + patient.getId() + " left.");
-
-            if (treatedCount.incrementAndGet() == totalPatients) {
-                waitingRoom.close(numberOfDoctors);
-            }
+            treatedCount.incrementAndGet();
         }
     }
 }
