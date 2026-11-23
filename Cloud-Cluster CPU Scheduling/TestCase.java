@@ -1,17 +1,10 @@
 import java.util.*;
-
-/**
- * TestCase.java  (Person 1)
- * Holds the input of one test: process list + Q + CS + aging interval.
- * getProcesses() ALWAYS returns fresh copies, so each scheduler gets its own objects.
- */
 public class TestCase {
 
     public final String name;
     public final int quantum;
     public final int contextSwitch;
     public final int agingInterval;
-    /** Expected ACS finish times from the assignment (null if unknown). Used by Person 5 to verify. */
     public final Map<String, Integer> expectedAcsFinish;
 
     private final List<Process> template = new ArrayList<>();
@@ -30,14 +23,12 @@ public class TestCase {
         return this;
     }
 
-    /** Fresh, untouched copies of all processes (arrival order = insertion order). */
     public List<Process> getProcesses() {
         List<Process> copies = new ArrayList<>();
         for (Process p : template) copies.add(p.copy());
         return copies;
     }
 
-    /** Same processes with different Q / CS (for the report's CS-vs-Q experiments). */
     public TestCase withParams(int newQuantum, int newCS) {
         TestCase t = new TestCase(name + " (Q=" + newQuantum + ", CS=" + newCS + ")",
                 newQuantum, newCS, agingInterval, null);
@@ -45,7 +36,6 @@ public class TestCase {
         return t;
     }
 
-    /** Builds a test from lines like "P1 0 4 2" (id arrival burst priority). */
     public static TestCase fromText(String name, int q, int cs, int agingInterval, String... lines) {
         TestCase t = new TestCase(name, q, cs, agingInterval, null);
         for (String line : lines) {
@@ -56,7 +46,6 @@ public class TestCase {
         return t;
     }
 
-    // ------------------------------------------------------------ assignment test cases
 
     public static TestCase testCase1() {
         Map<String, Integer> expected = new LinkedHashMap<>();
