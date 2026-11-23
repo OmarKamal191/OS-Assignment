@@ -2,7 +2,7 @@ import java.util.*;
 
 public class ACSTier1 {
 
-    public enum Outcome { FINISHED, DEMOTED }
+    public enum Outcome { FINISHED, DEMOTED } 
 
     private final Queue<Process> queue = new LinkedList<>();
     private final int quantum;
@@ -23,9 +23,9 @@ public class ACSTier1 {
     public Outcome runSlice(SimulationEngine engine, Process p) {
         engine.runProcess(p, quantum);
         if (p.isFinished()) {
-            return Outcome.FINISHED;
+            return Outcome.FINISHED; // is finished
         }
-        p.demoted = true;
+        p.demoted = true; // to tier_2
         p.tier2EntryTime = engine.getCurrentTime();
         return Outcome.DEMOTED;
     }
