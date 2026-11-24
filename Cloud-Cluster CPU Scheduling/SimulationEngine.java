@@ -1,15 +1,22 @@
 import java.util.*;
+
 public class SimulationEngine {
 
-    public enum SegmentType { RUN, CONTEXT_SWITCH, IDLE }
+    public enum SegmentType {
+        RUN, CONTEXT_SWITCH, IDLE
+    }
 
     public static class Segment {
         public final int start;
         public int end;
         public final SegmentType type;
         public final Process process;
+
         Segment(int start, int end, SegmentType type, Process process) {
-            this.start = start; this.end = end; this.type = type; this.process = process;
+            this.start = start;
+            this.end = end;
+            this.type = type;
+            this.process = process;
         }
 
         @Override
@@ -17,9 +24,11 @@ public class SimulationEngine {
             String label;
             switch (type) {
                 case RUN:
-                    label = process.id; break;
+                    label = process.id;
+                    break;
                 case CONTEXT_SWITCH:
-                    label = "CS -> " + process.id; break;
+                    label = "CS -> " + process.id;
+                    break;
                 default:
                     label = "IDLE";
             }
@@ -29,6 +38,12 @@ public class SimulationEngine {
 
     public interface StepListener {
         void onTick(int time, Process running);
+
+        default void onContextSwitchTick(int time, Process next) {
+        }
+
+        default void onIdleTick(int time) {
+        }
     }
 
     private final List<Process> processes;
@@ -45,7 +60,8 @@ public class SimulationEngine {
     }
 
     public SimulationEngine(List<Process> processes, int contextSwitchTime, boolean chargeCSAfterIdle) {
-        if (contextSwitchTime < 0) throw new IllegalArgumentException("CS must be >= 0");
+        if (contextSwitchTime < 0)
+            throw new IllegalArgumentException("CS must be >= 0");
         this.processes = processes;
         this.contextSwitchTime = contextSwitchTime;
         this.chargeCSAfterIdle = chargeCSAfterIdle;
@@ -53,10 +69,21 @@ public class SimulationEngine {
         notArrivedYet.sort(Comparator.comparingInt(p -> p.arrivalTime));
     }
 
-    public int getCurrentTime() { return currentTime; }
-    public int getContextSwitchTime() { return contextSwitchTime; }
-    public List<Process> getProcesses() { return processes; }
-    public void setStepListener(StepListener l) { this.listener = l; }
+    public int getCurrentTime() {
+        return currentTime;
+    }
+
+    public int getContextSwitchTime() {
+        return contextSwitchTime;
+    }
+
+    public List<Process> getProcesses() {
+        return processes;
+    }
+
+    public void setStepListener(StepListener l) {
+        this.listener = l;
+    }
 
     public List<Process> releaseArrivals() {
         List<Process> arrived = new ArrayList<>();
@@ -66,24 +93,41 @@ public class SimulationEngine {
         return arrived;
     }
 
-    public boolean hasPendingArrivals() { return !notArrivedYet.isEmpty(); }
+    public boolean hasPendingArrivals() {
+        return !notArrivedYet.isEmpty();
+    }
 
     public int nextArrivalTime() {
         return notArrivedYet.isEmpty() ? -1 : notArrivedYet.getFirst().arrivalTime;
     }
 
     public boolean allFinished() {
-        for (Process p : processes) if (!p.isFinished()) return false;
+        for (Process p : processes)
+            if (!p.isFinished())
+                return false;
         return true;
     }
 
     public void idleUntil(int time) {
-        if (time <= currentTime) return;
-        addSegment(currentTime, time, SegmentType.IDLE, null);
-        currentTime = time;
-        if (!chargeCSAfterIdle) lastRun = null;
-    }
+        if (time <= currentTime)
+            return;
 
+        int start = currentTime;
+
+        while (currentTime < time) {
+
+            if (listener != null)
+                listener.onIdleTick(currentTime);
+
+            currentTime++;
+        }
+
+        addSegment(start, time, SegmentType.IDLE, null);
+
+        currentTime = time;
+        if (!chargeCSAfterIdle)
+            lastRun = null;
+    }
 
     public boolean needsContextSwitch(Process next) {
         return contextSwitchTime > 0 && lastRun != null && lastRun != next;
@@ -91,35 +135,54 @@ public class SimulationEngine {
 
     public int dispatch(Process next) {
         int spent = 0;
+
         if (needsContextSwitch(next)) {
-            addSegment(currentTime, currentTime + contextSwitchTime, SegmentType.CONTEXT_SWITCH, next);
-            currentTime += contextSwitchTime;
-            spent = contextSwitchTime;
+            int start = currentTime;
+
+            while (spent < contextSwitchTime) {
+
+                if (listener != null)
+                    listener.onContextSwitchTick(currentTime, next);
+
+                currentTime++;
+                spent++;
+
+            }
+            addSegment(start, currentTime, SegmentType.CONTEXT_SWITCH, next);
+
         }
+
         lastRun = next;
         return spent;
     }
 
     public int runProcess(Process p, int units) {
-        if (p.isFinished()) throw new IllegalStateException(p.id + " is already finished");
+        if (p.isFinished())
+            throw new IllegalStateException(p.id + " is already finished");
         dispatch(p);
         int executed = 0;
         while (executed < units && !p.isFinished()) {
-            if (!p.hasStarted()) p.firstStartTime = currentTime;
-            if (listener != null) listener.onTick(currentTime, p);
+            if (!p.hasStarted())
+                p.firstStartTime = currentTime;
+            if (listener != null)
+                listener.onTick(currentTime, p);
             p.remainingTime--;
             currentTime++;
             executed++;
             addSegment(currentTime - 1, currentTime, SegmentType.RUN, p);
-            if (p.isFinished()) p.finishTime = currentTime;
+            if (p.isFinished())
+                p.finishTime = currentTime;
         }
         return executed;
     }
 
-    public int runToCompletion(Process p) { return runProcess(p, p.remainingTime); }
+    public int runToCompletion(Process p) {
+        return runProcess(p, p.remainingTime);
+    }
 
-
-    public List<Segment> getTimeline() { return timeline; }
+    public List<Segment> getTimeline() {
+        return timeline;
+    }
 
     private void addSegment(int start, int end, SegmentType type, Process p) {
         if (!timeline.isEmpty()) {
@@ -133,6 +196,7 @@ public class SimulationEngine {
     }
 
     public void printTimeline() {
-        for (Segment s : timeline) System.out.println(s);
+        for (Segment s : timeline)
+            System.out.println(s);
     }
 }
