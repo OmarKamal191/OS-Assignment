@@ -79,15 +79,12 @@ public class SJF implements Scheduler {
             System.out.println(s);
         }
         System.out.println("\nProcess Metrics:");
-        System.out.printf("%-10s %-10s %-10s %-10s %-10s %-10s%n", "Process", "Arrival", "Burst", "Finish", "Waiting", "Turnaround");
+        System.out.printf("%-10s %-10s %-10s %-10s %-10s %-12s %-10s%n",
+                "Process", "Arrival", "Burst", "Finish", "Waiting", "Turnaround", "Response");
         for (Process p : processes) {
-            System.out.printf("%-10s %-10d %-10d %-10d %-10d %-10d%n",
-                    p.id,
-                    p.arrivalTime,
-                    p.burstTime,
-                    p.finishTime,
-                    p.waitingTime,
-                    p.turnaroundTime);
+            System.out.printf("%-10s %-10d %-10d %-10d %-10d %-12d %-10d%n",
+                    p.id, p.arrivalTime, p.burstTime, p.finishTime,
+                    p.waitingTime, p.turnaroundTime, p.responseTime);
         }
 
         System.out.println("\nAverage Metrics:");

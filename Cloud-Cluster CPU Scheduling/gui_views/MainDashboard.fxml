@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+
+<BorderPane prefHeight="850.0" prefWidth="1400.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainController">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="top-bar">
+            <padding>
+                <Insets bottom="12.0" left="20.0" right="20.0" top="12.0" />
+            </padding>
+            <Label styleClass="app-title" text="Cloud-Cluster CPU Scheduling Simulator" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label styleClass="subtitle-badge" text="CS241 - Operating Systems | Cairo University (FCAI)" />
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab fx:id="configTab" text="1. Configuration &amp; Processes">
+                    <content>
+                        <fx:include fx:id="configView" source="ConfigurationView.fxml" />
+                    </content>
+                </Tab>
+                <Tab fx:id="simulationTab" text="2. Live Simulation &amp; Queues">
+                    <content>
+                        <fx:include fx:id="simulationView" source="SimulationView.fxml" />
+                    </content>
+                </Tab>
+                <Tab fx:id="analyticsTab" text="3. Metrics &amp; Analytics">
+                    <content>
+                        <fx:include fx:id="analyticsView" source="AnalyticsView.fxml" />
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>
